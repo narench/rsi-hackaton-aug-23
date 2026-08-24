@@ -1,0 +1,133 @@
+digraph DRUGGRAPH_SYSTEM {
+  graph [
+    rankdir=LR,
+    bgcolor="#f8fafc",
+    pad=0.35,
+    nodesep=0.45,
+    ranksep=0.75,
+    splines=ortho,
+    fontname="Helvetica",
+    label="DrugGraph — Self-Improving FDA Drug Intelligence",
+    labelloc=t,
+    fontsize=24,
+    fontcolor="#17201c"
+  ];
+
+  node [
+    shape=box,
+    style="rounded,filled",
+    fontname="Helvetica",
+    fontsize=11,
+    color="#cbd5e1",
+    fontcolor="#17201c",
+    margin="0.16,0.10"
+  ];
+
+  edge [
+    fontname="Helvetica",
+    fontsize=9,
+    color="#64748b",
+    fontcolor="#475569",
+    arrowsize=0.75
+  ];
+
+  subgraph cluster_sources {
+    label="FDA evidence";
+    color="#fdba74";
+    style="rounded,dashed";
+    fontcolor="#9a3412";
+
+    orange [label="Orange Book\nproducts · TE codes · patents", fillcolor="#ffedd5"];
+    purple [label="Purple Book\nreference · biosimilar · interchangeable", fillcolor="#ffedd5"];
+    openfda [label="openFDA\nDrugs@FDA · SPL labels · NDC", fillcolor="#ffedd5"];
+  }
+
+  loader [label="Python ingestion\nnormalize · resolve · preserve provenance", fillcolor="#fef3c7"];
+
+  subgraph cluster_graph {
+    label="Evidence layer";
+    color="#60a5fa";
+    style="rounded,dashed";
+    fontcolor="#1d4ed8";
+
+    neo4j [
+      label="FDA Knowledge Graph\nNeo4j\n95K nodes · 215K relationships",
+      fillcolor="#dbeafe",
+      penwidth=2
+    ];
+    schema [label="Live schema diagram\nGraphviz SVG", fillcolor="#e0f2fe"];
+  }
+
+  user [label="Researcher / Judge", shape=oval, fillcolor="#f3e8ff", color="#c084fc"];
+  ui [label="Streamlit research console\nchat · controls · traces · policy diff", fillcolor="#ede9fe", penwidth=2];
+
+  subgraph cluster_online {
+    label="Online RSI — repair the current request";
+    color="#4ade80";
+    style="rounded,dashed";
+    fontcolor="#15803d";
+
+    resolve [label="1. Resolve identity", fillcolor="#dcfce7"];
+    plan [label="2. Build parameterized\nread-only Cypher", fillcolor="#dcfce7"];
+    execute [label="3. Execute\n15s · 100-row boundary", fillcolor="#dcfce7"];
+    validate [label="4. Validate invariants\nstrength · form/route · TE group", fillcolor="#dcfce7"];
+    repair [label="5. Deterministic repair", fillcolor="#bbf7d0"];
+    answer [label="Evidence-backed answer\nclaims · limitations · provenance", fillcolor="#dcfce7"];
+
+    resolve -> plan -> execute -> validate;
+    validate -> repair [label="repairable failure", color="#dc2626", fontcolor="#b91c1c"];
+    repair -> plan [label="bounded retry", color="#dc2626", fontcolor="#b91c1c"];
+    validate -> answer [label="pass", color="#16a34a", fontcolor="#15803d"];
+  }
+
+  subgraph cluster_memory {
+    label="Durable state";
+    color="#94a3b8";
+    style="rounded,dashed";
+    fontcolor="#475569";
+
+    episodes [label="SQLite episodes\nquestions · attempts · failures · repairs", fillcolor="#f1f5f9"];
+    checkpoints [label="LangGraph checkpoints\npause · resume · replay", fillcolor="#f1f5f9"];
+    policies [label="Versioned YAML policies\nv1 · v2 · lineage", fillcolor="#f1f5f9"];
+    pointer [label="Atomic active-policy pointer\nreset · promote · rollback", fillcolor="#e2e8f0", penwidth=2];
+  }
+
+  subgraph cluster_offline {
+    label="Offline RSI — improve future behavior";
+    color="#f472b6";
+    style="rounded,dashed";
+    fontcolor="#be185d";
+
+    collect [label="1. Collect repairable failures", fillcolor="#fce7f3"];
+    mutate [label="2. Bounded policy mutator\nallowlisted structured patches", fillcolor="#fce7f3"];
+    evaluate [label="3. Graph-backed evaluation\nbaseline + candidate policies", fillcolor="#fce7f3"];
+    gates [label="4. Deterministic hard gates\nscore ↑ · all pass · zero regressions", fillcolor="#fbcfe8", penwidth=2];
+    approval [label="5. Human approval\nLangGraph interrupt", shape=diamond, fillcolor="#fdf2f8"];
+    promote [label="6. Atomic promotion\nwrite policy · update pointer", fillcolor="#fce7f3"];
+
+    collect -> mutate -> evaluate -> gates -> approval -> promote;
+  }
+
+  orange -> loader;
+  purple -> loader;
+  openfda -> loader;
+  loader -> neo4j [label="versioned snapshots"];
+  neo4j -> schema [label="introspect"];
+
+  user -> ui [label="question / demo action"];
+  ui -> resolve [label="request + active policy"];
+  plan -> neo4j [label="read-only query"];
+  neo4j -> execute [label="rows + provenance"];
+  answer -> ui [label="answer + trace"];
+
+  validate -> episodes [label="persist attempt"];
+  episodes -> collect [label="failure episodes"];
+  checkpoints -> approval [dir=both, label="durable pause"];
+  evaluate -> neo4j [label="benchmark queries"];
+  neo4j -> evaluate [label="benchmark evidence"];
+  policies -> mutate [label="parent policy"];
+  promote -> policies [label="new version"];
+  promote -> pointer;
+  pointer -> resolve [label="next request"];
+  gates -> ui [label="scores + policy diff", style=dashed];
+}

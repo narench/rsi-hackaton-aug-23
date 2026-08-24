@@ -1,6 +1,6 @@
-# FDA Neo4j Dynamic Query Optimization
+# DrugGraph: Self-Improving FDA Drug Intelligence
 
-A hackathon-ready FDA research graph and durable recursive self-improvement (RSI) demo built with Neo4j, LangGraph, and Streamlit.
+Self-improving FDA drug intelligence with a knowledge graph, deterministic evals, and policy evolution.
 
 The project focuses on one problem: safely improving dynamic graph-query policies from observed failures without allowing an optimizer to rewrite arbitrary application code.
 
@@ -27,6 +27,26 @@ The graph loader combines:
 - NDC product listings
 
 State substitution law is intentionally not inferred. Purple Book and Orange Book evidence is presented separately from state-specific dispensing rules.
+
+## System design
+
+[![DrugGraph system design](skills/dynamic-query-neo4j/demo/docs/druggraph-system-design.svg)](skills/dynamic-query-neo4j/demo/docs/druggraph-system-design.svg)
+
+The architecture separates the online request-repair loop from offline durable policy optimization. Neo4j stores FDA evidence, SQLite stores episodes and checkpoints, and versioned YAML stores promoted behavior.
+
+## Live graph schema
+
+[![DrugGraph live FDA schema](skills/dynamic-query-neo4j/demo/docs/fda-graph-schema.svg)](skills/dynamic-query-neo4j/demo/docs/fda-graph-schema.svg)
+
+The diagram is generated from the running graph and includes every observed node-label combination, property, relationship direction, and population count. Regenerate it after loading new data:
+
+```bash
+cd skills/dynamic-query-neo4j/demo
+source .venv/bin/activate
+python generate_schema_diagram.py
+```
+
+Graphviz (`dot`) must be installed to render the SVG and PNG outputs.
 
 ## Quick start
 
