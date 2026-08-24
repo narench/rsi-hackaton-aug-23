@@ -150,3 +150,15 @@ skills/dynamic-query-neo4j/
 ## Current scope
 
 The durable optimizer currently specializes in Orange Book substitution policy and a Purple Book interchangeability capability gate. Biologic navigation and label comparison are available in the chatbot, but broader autonomous optimization for those workflows remains future work.
+
+## Future work
+
+- **LLM-as-judge:** Add qualitative scoring for usefulness and clarity while keeping deterministic checks as mandatory promotion gates. An LLM score must never promote a policy by itself.
+- **LLM policy proposer:** Generate structured, allowlisted policy patches instead of arbitrary code or unrestricted Cypher.
+- **Broader RSI coverage:** Optimize biologic navigation, label comparison, and safety-monitoring workflows.
+- **Frozen evaluation graph:** Evaluate candidates against reproducible FDA snapshots in isolated Neo4j containers.
+- **State substitution rules:** Load sourced, effective-dated state laws separately from federal FDA evidence.
+- **Adversarial evaluation:** Test prompt injection, unsafe Cypher, fabricated evidence, and incorrect substitution claims.
+- **Shadow deployment:** Compare candidate policies against real traffic before promotion, with canary rollout and automatic rollback.
+- **Better observability:** Add live optimizer logs, cost and latency metrics, lineage dashboards, and failure clustering.
+- **Production security:** Use dedicated read-only Neo4j credentials, authentication, rate limits, and complete audit trails.
