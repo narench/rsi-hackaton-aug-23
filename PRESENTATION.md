@@ -37,7 +37,11 @@ Talk track: Complex research agents rely on RAG to fetch enterprise knowledge be
 
 ---
 
-# 2. FDA retrieval is a graph problem
+<!-- _class: compact -->
+
+# 2. FDA Knowledge Graph
+
+## Unifying fragmented regulatory evidence for precise retrieval
 
 | Source | Evidence |
 |---|---|
