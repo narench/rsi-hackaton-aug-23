@@ -4,7 +4,7 @@ Self-improving FDA drug intelligence with a knowledge graph, deterministic evals
 
 The project focuses on one problem: safely improving dynamic graph-query policies from observed failures without allowing an optimizer to rewrite arbitrary application code.
 
-**Presentation:** [HTML slideshow](https://narench.github.io/rsi-hackaton-aug-23/PRESENTATION.html) · [PDF](PRESENTATION.pdf) · [Marp source](PRESENTATION.md)
+**Presentation:** [HTML slideshow](https://narench.github.io/rsi-hackaton-aug-23/PRESENTATION.html)
 
 ## What the demo shows
 
