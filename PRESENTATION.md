@@ -16,20 +16,23 @@ style: |
 footer: 'DrugGraph — Self-Improving FDA Drug Intelligence'
 ---
 
-# 1. Retrieval is the safety layer
+<!-- _class: compact -->
 
-## An AI answer is only as reliable as the evidence it retrieves
+# 1. Complex research agents depend on retrieval
 
-- FDA evidence is precise: **product, strength, route, dosage form, and regulatory status** all matter.
-- Retrieving the wrong cohort can still produce a fluent, convincing answer.
-- Generation cannot recover evidence that retrieval missed—or detect evidence that retrieval mixed incorrectly.
+## RAG fetches the enterprise domain knowledge an agent needs to reason
 
-> **Better retrieval is more important than better wording.**
+- Foundation models do not contain every organization’s **current, private, or regulated evidence**.
+- RAG is the agent’s evidence supply chain: it selects what enters the reasoning context.
+- Poor retrieval creates confident conclusions from missing, stale, or incorrectly grouped evidence.
+- In drug research, **product, strength, route, dosage form, and regulatory status** all matter.
 
-**Goal:** make retrieval observable, testable, and capable of improving from failure.
+> **If retrieval is wrong, better generation cannot rescue the answer.**
+
+**Goal:** make enterprise retrieval observable, testable, and self-improving.
 
 <!--
-Talk track: Drug research is not just search. A plausible answer over the wrong product cohort is still wrong. We treat retrieval itself as the system that needs evaluation and improvement.
+Talk track: Complex research agents rely on RAG to fetch enterprise knowledge before reasoning begins. That makes retrieval quality a system-level safety and performance concern, not just a search feature.
 -->
 
 ---
