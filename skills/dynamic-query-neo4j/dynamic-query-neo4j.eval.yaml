@@ -1,10 +1,5 @@
-# Siblings are installed so activation is tested against nearby domain skills.
 skills:
   - ./SKILL.md
-  - ../find-true-competitors/SKILL.md
-  - ../optimize-keyword-strategy/SKILL.md
-  - ../find-reddit-relevant-threads/SKILL.md
-  - ../optimize-parameter-next-video-script/SKILL.md
 sandbox:
   forbidden_files:
     - ".*\\.eval\\.yaml$"

@@ -1,74 +1,152 @@
-# rsi-hackaton-aug-23
+# FDA Neo4j Dynamic Query Optimization
 
-Built for **[Recursive Self Improvement Hack: Evals](https://luma.com/rkum5o5l)** — a
-Sundai hackathon in San Francisco, 23 August 2026.
+A hackathon-ready FDA research graph and durable recursive self-improvement (RSI) demo built with Neo4j, LangGraph, and Streamlit.
 
-The premise of the day: a self-improving loop is only as good as its evaluator.
-So this project is built **evals-first** — the measurement exists before the
-thing that optimises against it.
+The project focuses on one problem: safely improving dynamic graph-query policies from observed failures without allowing an optimizer to rewrite arbitrary application code.
 
-## The idea
+## What the demo shows
 
-An agent skill is a document, and a document can be rewritten. If you can score
-a skill, you can hill-climb it: edit, re-score, keep what wins. The score is the
-hard part, so that is what got built first.
+1. **Policy v1 fails safely** — the baseline uses an incomplete Orange Book cohort policy and blocks adalimumab interchangeability because the biologic capability has not been approved.
+2. **Online repair** — a Lipitor substitution query detects mixed strength and dosage-form cohorts, adds the missing constraints, and answers on its second attempt.
+3. **Offline optimization** — bounded policy descendants compete against executable Neo4j benchmarks.
+4. **Deterministic promotion gates** — candidates must improve the baseline score, pass all hard checks, and introduce no regressions.
+5. **Visible policy promotion** — the UI displays runtime configuration, round results, scores, mutation operations, and the complete v1-to-v2 YAML diff.
+6. **Replay under v2** — Lipitor succeeds in one attempt and the validated Purple Book capability allows the adalimumab query.
+7. **Reset and rollback** — the demo can return to policy v1 from the UI or CLI.
 
-- **The corpus** — five workflow skills in [`skills/`](skills/), deliberately
-  unrelated to each other so a change to one is measurable on its own.
-- **The scoreboard** — a [caliper](https://github.com/edonadei/caliper) eval
-  spec beside each skill: a happy path, an edge case, and an adversarial task.
-  Fixtures are CSV, so no live database is needed.
-- **The climber** — `meta-framework-rsi-skill-improvement`, the loop that reads
-  the scores and rewrites the skills. **Currently a placeholder.**
+This is policy optimization, not model-weight training. The optimizer searches a small allowlisted mutation space and persists only evaluated, approved winners.
 
-## The loop
+## Data sources
 
-```
-baseline  →  edit the SKILL.md  →  caliper run --k 3  →  caliper compare  →  keep or revert
-```
+The graph loader combines:
 
-Two numbers come back per run, and both matter. **Task pass@k** says whether the
-skill does the job. **Activation rate** says whether the skill fired at all — a
-skill the agent never reaches for scores nothing, however good its content.
+- FDA Orange Book products, patents, exclusivities, RLD/RS fields, and complete TE codes
+- FDA Purple Book reference, biosimilar, and interchangeable application relationships
+- openFDA Drugs@FDA enrichment
+- SPL labels
+- NDC product listings
 
-Each spec installs only the skill under test. The five are unrelated, so a
-neighbourhood would add cost and noise without measuring anything real.
+State substitution law is intentionally not inferred. Purple Book and Orange Book evidence is presented separately from state-specific dispensing rules.
 
-`--baseline` scores the raw agent on the same tasks. That is the floor: a skill
-that does not beat it is costing context for nothing.
+## Quick start
 
-## Try it
+Requirements:
+
+- Docker with Compose (OrbStack works)
+- Internet access for the initial FDA data load
 
 ```bash
-npx skills add edonadei/rsi-hackaton-aug-23
+git clone https://github.com/narench/rsi-hackaton-aug-23.git
+cd rsi-hackaton-aug-23/skills/dynamic-query-neo4j/demo
+cp .env.example .env
+
+docker compose up -d neo4j
+docker compose --profile load run --rm loader
+docker compose up -d --build chatbot
 ```
+
+Open:
+
+- Streamlit demo: <http://localhost:8501>
+- Neo4j Browser: <http://localhost:7474>
+
+The default demo credentials are documented in `.env.example`. Change them outside a local hackathon environment.
+
+## Judge flow
+
+1. Click **Reset demo to policy v1**.
+2. Ask **Which adalimumab products are interchangeable?**
+   - v1 blocks the query with `MISSING_VALIDATED_BIOLOGIC_POLICY`.
+3. Click **Run live RSI demo**.
+   - The UI shows the failed cohort invariant, candidate evaluations, promotion decision, and full policy diff.
+4. Ask the adalimumab question again.
+   - v2 returns the loaded Purple Book family.
+5. Reset to v1 and repeat as needed.
+
+The sidebar controls:
+
+- Maximum online query-repair attempts
+- Policy candidates per optimization round
+- Maximum optimization rounds
+
+## RSI implementation
+
+```text
+User request
+    |
+    v
+LangGraph online loop
+  resolve -> plan -> execute -> validate -> repair
+    |
+    v
+SQLite episode and attempt traces
+    |
+    v
+Offline policy optimizer
+  collect -> propose -> evaluate -> select -> approve -> promote
+    |
+    +--> Neo4j graph-backed benchmark gates
+    +--> versioned YAML policies
+    +--> atomic active-policy pointer
+```
+
+Safety boundaries:
+
+- Generated Cypher must be a single read-only statement.
+- Parameters are separated from query text.
+- Forbidden write/admin clauses and comments are rejected.
+- Queries have a 15-second timeout and 100-row boundary.
+- Policy mutations use an allowlisted structured operation vocabulary.
+- Promotion requires deterministic hard gates and approval.
+- Rollback atomically restores an existing policy version.
+
+See [`skills/dynamic-query-neo4j/demo/RSI-DESIGN.md`](skills/dynamic-query-neo4j/demo/RSI-DESIGN.md) for implementation details and production-hardening boundaries.
+
+## CLI
 
 ```bash
-caliper run skills/find-true-competitors/find-true-competitors.eval.yaml --k 3 --baseline
+cd skills/dynamic-query-neo4j/demo
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-rsi.txt
+
+python -m rsi.cli reset
+python -m rsi.cli demo
 ```
 
-Needs `caliper` (`pipx install caliper-eval`). Per-skill detail is in
-[`skills/README.md`](skills/README.md).
-
-## Tooling
-
-The [caliper repo](https://github.com/edonadei/caliper) ships two skills that
-drive this loop, so the work is done in conversation rather than by hand:
-
-- **`grill-skill`** — interviews you into an eval, writes the `.eval.yaml`, then
-  runs the create → test → improve loop. Every spec in `skills/` came from it.
-- **`evaluate-skill`** — measures an existing skill: pass@k over k runs, a
-  baseline comparison against the raw agent, and reads of the results.
+Manual approval and rollback:
 
 ```bash
-npx skills add edonadei/caliper
+python -m rsi.cli improve
+python -m rsi.cli approve THREAD_ID
+python -m rsi.cli reject THREAD_ID
+python -m rsi.cli rollback 1
 ```
 
-They are also the reference implementation of the hand-run version of the loop.
-`meta-framework-rsi-skill-improvement` is the attempt to close it — same steps,
-no human in the middle.
+## Tests
 
-## Status
+```bash
+cd skills/dynamic-query-neo4j/demo
+source .venv/bin/activate
+pytest -q
+```
 
-The corpus and the scoreboard are done and validating. The climber is a stub —
-that is the part still to write.
+## Repository layout
+
+```text
+skills/dynamic-query-neo4j/
+├── SKILL.md                       # Dynamic Neo4j query workflow
+├── CYPHER-PATTERNS.md             # FDA-oriented query patterns
+├── dynamic-query-neo4j.eval.yaml  # Skill evaluation tasks
+└── demo/
+    ├── chatbot.py                 # Streamlit research console
+    ├── load_graph.py              # FDA graph ingestion
+    ├── compose.yaml               # Neo4j, loader, and chatbot services
+    ├── RSI-DESIGN.md              # RSI architecture and boundaries
+    ├── rsi/                       # Online/offline optimizer implementation
+    └── tests/                     # Safety and policy tests
+```
+
+## Current scope
+
+The durable optimizer currently specializes in Orange Book substitution policy and a Purple Book interchangeability capability gate. Biologic navigation and label comparison are available in the chatbot, but broader autonomous optimization for those workflows remains future work.
