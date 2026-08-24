@@ -1,0 +1,21 @@
+version: 1
+parent: null
+description: Baseline policy with ingredient-only Orange Book cohorts and biologic interchangeability disabled.
+capabilities:
+  biologic_interchangeability: false
+intents:
+  substitution:
+    source: orange_book
+    required_identity:
+      - ingredient
+    cohort_fields:
+      - ingredient
+    validators:
+      - one_ingredient
+      - one_strength
+      - one_form_route
+      - preserve_te_subcode
+      - no_state_claim_without_rule
+    repairs:
+      MIXED_STRENGTH: add_pharmaceutical_equivalence_fields
+      MIXED_FORM_ROUTE: add_pharmaceutical_equivalence_fields

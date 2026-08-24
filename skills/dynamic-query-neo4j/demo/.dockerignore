@@ -1,0 +1,9 @@
+.env
+.gitignore
+.venv/
+__pycache__/
+data/
+README.md
+queries.cypher
+tests/
+RSI-DESIGN.md

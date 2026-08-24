@@ -1,0 +1,3 @@
+{"case_id":"lipitor-10mg-first-pass","question":"Find substitutes for Lipitor 10 mg oral tablets","expected_status":"answered","max_attempts":1,"required_policy_fields":["ingredient","strength","dosage_form_route","te_code"],"min_a_rated":1}
+{"case_id":"lipitor-missing-strength","question":"Can generic Lipitor be substituted?","expected_status":"clarification","max_attempts":0,"required_policy_fields":["ingredient","strength","dosage_form_route","te_code"]}
+{"case_id":"atorvastatin-20mg-first-pass","question":"Show A-rated atorvastatin calcium 20 mg tablets","expected_status":"answered","max_attempts":1,"required_policy_fields":["ingredient","strength","dosage_form_route","te_code"],"min_a_rated":1}

@@ -1,0 +1,7 @@
+.env
+.venv/
+__pycache__/
+data/
+*.pyc
+rsi/state/*.db*
+rsi/policies/query-policy.v[2-9]*.yaml
